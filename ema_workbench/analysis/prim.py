@@ -732,12 +732,13 @@ class PrimBox(object):
         restricted_dims = sdutil._determine_restricted_dims(self.box_lims[-1],
                                                             self.prim.box_init)
 
-        data = {'coverage': coi / self.prim.t_coi,
+        data = {'coverage': self.get_coverage(coi),
                 'density': coi / y.shape[0],
                 'mean': np.mean(y),
                 'res_dim': restricted_dims.shape[0],
                 'mass': y.shape[0] / self.prim.n,
                 'id': i}
+
         new_row = pd.DataFrame([data])
         self.peeling_trajectory = self.peeling_trajectory.append(
             new_row, ignore_index=True, sort=True)
@@ -746,6 +747,13 @@ class PrimBox(object):
         qp = self._calculate_quasi_p(i, restricted_dims)
         self.qp.append(qp)
         self._cur_box = len(self.peeling_trajectory) - 1
+
+    def get_coverage(self, coi):
+        if self.prim.t_coi == 0:
+            coverage = -1
+        else:
+            coverage = coi / self.prim.t_coi
+        return coverage
 
     def show_ppt(self):
         '''show the peeling and pasting trajectory in a figure'''

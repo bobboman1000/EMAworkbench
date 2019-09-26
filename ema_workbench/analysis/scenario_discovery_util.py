@@ -7,6 +7,8 @@ from __future__ import (absolute_import, print_function, division,
 import abc
 import enum
 import itertools
+import math
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -307,8 +309,10 @@ def _calculate_quasip(x, y, box, Hbox, Tbox):
 
     p = Hj / Tj
 
-    Hbox = int(Hbox)
-    Tbox = int(Tbox)
+
+    # Avoid decimal errors
+    Hbox = int(np.round(Hbox))
+    Tbox = int(np.round(Tbox))
 
     # force one sided
     qp = sp.stats.binom_test(

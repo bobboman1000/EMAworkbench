@@ -37,6 +37,7 @@ local.properties
 ## PyCharm
 ############
 .idea/*
+**/*.iml
 
 
 #################
