@@ -1026,24 +1026,9 @@ class Prim(sdutil.OutputFormatterMixin):
                                  box.density,
                                  box.res_dim)
 
-        if (self.threshold_type == ABOVE) &\
-           (box.mean >= self.threshold):
-            _logger.info(message)
-            self._boxes.append(box)
-            return box
-        elif (self.threshold_type == BELOW) &\
-                (box.mean <= self.threshold):
-            _logger.info(message)
-            self._boxes.append(box)
-            return box
-        else:
-            # make a dump box
-            _logger.info(('box does not meet threshold criteria, '
-                          'value is {}, returning dump box').format(
-                box.mean))
-            box = PrimBox(self, self.box_init, self.yi_remaining[:])
-            self._boxes.append(box)
-            return box
+        _logger.info(message)
+        self._boxes.append(box)
+        return box
 
     def determine_coi(self, indices):
         '''
