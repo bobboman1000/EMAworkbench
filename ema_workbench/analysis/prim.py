@@ -1124,16 +1124,18 @@ class Prim(sdutil.OutputFormatterMixin):
 
         # determine the scores for each peel in order
         # to identify the next candidate box
-        scores = []
-        for entry in possible_peels:
-            i, box_lim = entry
-            obj = self.obj_func(self, self.y[box.yi], self.y[i])
-            non_res_dim = self.n_cols -\
-                sdutil._determine_nr_restricted_dims(box_lim,
-                                                     self.box_init)
-            score = (obj, non_res_dim, box_lim, i)
-            scores.append(score)
+        pool = []
+        q = Queue()
+        chunked_peels = self._chunks(possible_peels, 4)
+        for i in range(4):
+            p = Process(target=self._eval_peels, args=(chunked_peels[i], box, x, q))
+            pool.append(p)
+            p.start()
 
+        for p in pool:
+            p.join()
+
+        scores = list(q.get())
         scores.sort(key=itemgetter(0, 1), reverse=True)
         entry = scores[0]
 
@@ -1150,6 +1152,20 @@ class Prim(sdutil.OutputFormatterMixin):
         else:
             # else return received box
             return box
+
+    def _eval_peels(self, entries, box, x, q):
+        for e in entries:
+            i, box_lim = e
+            obj = self.obj_func(self, self.y[box.yi], self.y[i])
+            non_res_dim = self.n_cols - \
+                          sdutil._determine_nr_restricted_dims(box_lim,
+                                                               self.box_init)
+            score = (obj, non_res_dim, box_lim, i)
+            q.put(score)
+
+    def _chunks(self, l, n):
+        """Yield successive n-sized chunks from l."""
+        return [l[i::n] for i in range(n)]
 
     def _real_peel(self, box, u, j, x):
         '''
