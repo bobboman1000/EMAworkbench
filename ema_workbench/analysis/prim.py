@@ -15,6 +15,8 @@ the jupyter notebook.
 '''
 import copy
 import itertools
+from multiprocessing import Queue, Process, Event
+
 import matplotlib as mpl
 from operator import itemgetter
 import warnings
@@ -1125,19 +1127,26 @@ class Prim(sdutil.OutputFormatterMixin):
         # determine the scores for each peel in order
         # to identify the next candidate box
         pool = []
+        p_count = 3
+        chunked_peels = self._chunks(possible_peels, p_count)
         q = Queue()
-        chunked_peels = self._chunks(possible_peels, 4)
-        for i in range(4):
-            p = Process(target=self._eval_peels, args=(chunked_peels[i], box, x, q))
+        for i in range(p_count):
+            p = Process(target=self._eval_peels, args=(chunked_peels[i], box, q))
             pool.append(p)
             p.start()
+
+        scores = list()
+
+        for i in range(len(possible_peels)):
+            scores.append(q.get())
 
         for p in pool:
             p.join()
 
-        scores = list(q.get())
         scores.sort(key=itemgetter(0, 1), reverse=True)
         entry = scores[0]
+
+        assert len(scores) == len(possible_peels)
 
         obj_score = entry[0]
         box_new, indices = entry[2:]
@@ -1153,15 +1162,23 @@ class Prim(sdutil.OutputFormatterMixin):
             # else return received box
             return box
 
-    def _eval_peels(self, entries, box, x, q):
-        for e in entries:
-            i, box_lim = e
+    def to_list(self, q: Queue):
+        l = []
+        while not q.empty():
+            l.append(q.get())
+        return l
+
+    def _eval_peels(self, entries: list, box, q: Queue):
+        for entry in entries:
+            i, box_lim = entry
             obj = self.obj_func(self, self.y[box.yi], self.y[i])
             non_res_dim = self.n_cols - \
                           sdutil._determine_nr_restricted_dims(box_lim,
                                                                self.box_init)
             score = (obj, non_res_dim, box_lim, i)
+            assert not q.full()
             q.put(score)
+        print("Finish")
 
     def _chunks(self, l, n):
         """Yield successive n-sized chunks from l."""
