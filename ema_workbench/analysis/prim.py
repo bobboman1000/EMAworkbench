@@ -15,6 +15,7 @@ the jupyter notebook.
 '''
 import copy
 import itertools
+import time
 from multiprocessing import Queue, Process, Event
 
 import matplotlib as mpl
@@ -1094,6 +1095,7 @@ class Prim(sdutil.OutputFormatterMixin):
         self.yi_remaining = self.yi
 
     def _peel(self, box):
+        start = time.time()
         '''
 
         Executes the peeling phase of the PRIM algorithm. Delegates
@@ -1153,6 +1155,8 @@ class Prim(sdutil.OutputFormatterMixin):
 
         mass_new = self.y[indices].shape[0] / self.n
 
+        print(time.time() - start)
+
         if (mass_new >= self.mass_min) &\
            (mass_new < mass_old) &\
            (obj_score > 0):
@@ -1178,7 +1182,6 @@ class Prim(sdutil.OutputFormatterMixin):
             score = (obj, non_res_dim, box_lim, i)
             assert not q.full()
             q.put(score)
-        print("Finish")
 
     def _chunks(self, l, n):
         """Yield successive n-sized chunks from l."""
