@@ -1099,7 +1099,10 @@ class Prim(sdutil.OutputFormatterMixin):
 
         '''
 
-        mass_old = box.yi.shape[0] / self.n
+        mass_old = box.yi.shape[0]
+        if self.mass_min < 1:
+            mass_old /= self.n
+
 
         x_float = self.x_float[box.yi]
         x_int = self.x_int[box.yi]
@@ -1140,7 +1143,10 @@ class Prim(sdutil.OutputFormatterMixin):
         obj_score = entry[0]
         box_new, indices = entry[2:]
 
-        mass_new = self.y[indices].shape[0] / self.n
+        mass_new = self.y[indices].shape[0]
+        
+        if self.mass_min < 1:
+            mass_new /= self.n
 
         if (mass_new >= self.mass_min) &\
            (mass_new < mass_old) &\
