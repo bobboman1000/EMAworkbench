@@ -1504,9 +1504,7 @@ class Prim(sdutil.OutputFormatterMixin):
 
         .. math::
 
-            obj = \frac
-                 {\text{ave} [y_{i}\mid x_{i}\in{B-b}] - \text{ave} [y\mid x\in{B}]}
-                 {|n(y_{i})-n(y)|}
+            obj = \frac{\text{ave} [y_{i}\mid x_{i}\in{B-b}] - \text{ave} [y\mid x\in{B}]} {|n(y_{i})-n(y)|}
 
         where :math:`B-b` is the set of candidate new boxes, :math:`B`
         the old box and :math:`y` are the y values belonging to the old
@@ -1579,6 +1577,16 @@ class Prim(sdutil.OutputFormatterMixin):
         else:
             return -1
 
+    def _wracc_obj_func(self, y_old, y_new):
+        """
+        WRAcc: box_mass * ( mean_in_box * mean )
+        """
+        if y_new.shape[0] > 0:
+            wracc = (y_new.shape[0] * (np.sum(y_new) - np.sum(self.y))) / self.y.shape[0]
+        else:
+            wracc = -1
+        return wracc
+
     def _assert_mode(self, y, mode, update_function):
         if mode == sdutil.RuleInductionType.BINARY:
             return set(np.unique(y)) == {0, 1}
@@ -1610,7 +1618,8 @@ class Prim(sdutil.OutputFormatterMixin):
     # todo:: move functions themselves to ENUM?
     _obj_functions = {PRIMObjectiveFunctions.LENIENT2: _lenient2_obj_func,
                       PRIMObjectiveFunctions.LENIENT1: _lenient1_obj_func,
-                      PRIMObjectiveFunctions.ORIGINAL: _original_obj_func}
+                      PRIMObjectiveFunctions.ORIGINAL: _original_obj_func,
+                      PRIMObjectiveFunctions.WRACC: _wracc_obj_func}
 
     _update_functions = {'default': _update_yi_remaining_default,
                          'guivarch': _update_yi_remaining_guivarch}

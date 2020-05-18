@@ -29,6 +29,7 @@ class PRIMObjectiveFunctions(Enum):
     LENIENT2 = 'lenient2'
     LENIENT1 = 'lenient1'
     ORIGINAL = 'original'
+    WRACC = 'wracc'
 
 
 def get_quantile(data, quantile):
