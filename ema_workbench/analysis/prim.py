@@ -1581,7 +1581,7 @@ class Prim(sdutil.OutputFormatterMixin):
         """
         WRAcc: box_mass * ( mean_in_box - mean )
         """
-        mass = y_new.shape[0] / self.y
+        mass = y_new.shape[0] / self.y.shape[0]
         mean_in_box = np.mean(y_new)
         mean = np.mean(self.y)
         if y_new.shape[0] > 0:
